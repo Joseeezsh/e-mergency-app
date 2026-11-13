@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-mergency App — Final Case Study Report</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 15mm 16mm;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+        color: #1f2937;
+        line-height: 1.45;
+        font-size: 10.2pt;
+        margin: 0;
+        padding: 0;
+      }
+      .header-banner {
+        border-left: 6px solid #dc2626;
+        padding: 10px 14px;
+        background: #fef2f2;
+        margin-bottom: 14px;
+      }
+      .course-label {
+        font-size: 8.5pt;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #b91c1c;
+        margin: 0 0 4px;
+      }
+      h1 {
+        font-size: 18pt;
+        margin: 0 0 4px;
+        color: #111827;
+      }
+      .subtitle {
+        margin: 0 0 8px;
+        font-size: 10pt;
+        color: #4b5563;
+      }
+      .meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 14px;
+        font-size: 9pt;
+        border-top: 1px solid #fecaca;
+        padding-top: 8px;
+      }
+      h2 {
+        font-size: 12pt;
+        color: #991b1b;
+        border-bottom: 1.5px solid #e5e7eb;
+        padding-bottom: 3px;
+        margin: 14px 0 7px;
+        page-break-after: avoid;
+      }
+      h3 {
+        font-size: 10.3pt;
+        color: #111827;
+        margin: 9px 0 4px;
+        page-break-after: avoid;
+      }
+      p {
+        margin: 0 0 7px;
+      }
+      ul {
+        margin: 4px 0 8px 18px;
+        padding: 0;
+      }
+      li {
+        margin-bottom: 3px;
+      }
+      code {
+        font-family: Consolas, 'Courier New', monospace;
+        font-size: 8.8pt;
+        background: #f3f4f6;
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 10px;
+        font-size: 8.8pt;
+        page-break-inside: avoid;
+      }
+      th,
+      td {
+        border: 1px solid #d1d5db;
+        padding: 5px 7px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #f9fafb;
+        font-weight: 700;
+        color: #111827;
+      }
+      .callout {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-left: 4px solid #334155;
+        padding: 8px 10px;
+        margin: 8px 0;
+        font-size: 9.2pt;
+        page-break-inside: avoid;
+      }
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .box {
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 8px 10px;
+        background: #ffffff;
+        page-break-inside: avoid;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header-banner">
+      <p class="course-label">Mobile Application Technology — Final Case Study</p>
+      <h1>E-mergency App (Electronic Emergency)</h1>
+      <p class="subtitle">
+        Zero-Account Geolocation-Assisted Emergency Reporting &amp; Dispatch Monitor Mobile Application
+      </p>
+      <div class="meta-grid">
+        <div><strong>Package ID:</strong> <code>com.emergency.app</code></div>
+        <div><strong>Stack:</strong> Ionic 9 · Angular 22 · Capacitor 8 · Leaflet</div>
+        <div style="grid-column: 1 / -1">
+          <strong>Group Members:</strong> Gregorio, Maricar F. · Marcelo, Ana Leah D. · Olinares III, Jose A. ·
+          Villamia, Beatriz D.
+        </div>
+      </div>
+    </div>
+
+    <h2>1. Problem Statement &amp; Proposed Solution</h2>
+    <h3>Problem</h3>
+    <p>
+      During sudden medical, fire, vehicular, or personal security emergencies, individuals face two critical barriers
+      when using conventional emergency or incident-reporting apps: (1) mandatory account registration or login flows
+      delay help when seconds matter, and (2) panicked callers frequently struggle to describe their exact street
+      address or landmarks to responders. Conversely, single-tap SOS buttons without safeguards risk triggering
+      accidental calls to emergency hotlines such as <code>911</code>.
+    </p>
+
+    <h3>Solution: E-mergency App</h3>
+    <p>
+      <strong>E-mergency App</strong> removes authentication friction completely by launching directly into the
+      <strong>SOS</strong> screen, automatically acquiring GPS coordinates via Capacitor Geolocation, rendering the
+      caller's live position and accuracy radius on an interactive <strong>Leaflet</strong> map, and resolving a
+      human-readable street address using OpenStreetMap Nominatim. To prevent unintended emergency calls, pressing
+      <strong>SOS — CALL 911</strong> initiates a cancelable countdown guard (default <code>5s</code>, configurable to
+      <code>3s</code>/<code>5s</code>/<code>10s</code>) accompanied by haptic pulses. A default-enabled
+      <strong>Safe Test Mode</strong> allows full end-to-end demonstrations and classroom testing without dialing real
+      <code>911</code>.
+    </p>
+
+    <h2>2. Core Features &amp; User Experience</h2>
+    <div class="two-col">
+      <div class="box">
+        <h3>User SOS Tab (<code>/tabs/sos</code>)</h3>
+        <ul>
+          <li><strong>Zero-Login Entry:</strong> Opens straight to emergency controls.</li>
+          <li>
+            <strong>Live GPS &amp; Leaflet Map:</strong> Displays pulsing pin, accuracy circle, coordinates, and
+            resolved street address.
+          </li>
+          <li>
+            <strong>Category &amp; Note:</strong> Quick chips (<em>Medical, Fire, Accident, Security, General</em>) plus
+            optional landmark note.
+          </li>
+          <li>
+            <strong>Cancelable Countdown Guard:</strong> Haptic ticks + prominent <strong>CANCEL SOS</strong> button.
+          </li>
+          <li><strong>Emergency Output Card:</strong> Copyable summary &amp; direct OpenStreetMap link.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>Admin Monitor &amp; Settings</h3>
+        <ul>
+          <li>
+            <strong>Admin Monitor (<code>/tabs/admin</code>):</strong> Live badge count of <code>Active</code> alerts;
+            filter by <em>All, Active, Ack, Done</em>.
+          </li>
+          <li>
+            <strong>Map Inspector:</strong> Shared <code>EmergencyMapComponent</code> pins any selected alert for
+            dispatcher verification.
+          </li>
+          <li>
+            <strong>Lifecycle Controls:</strong> Mark alerts <strong>Acknowledged</strong> or
+            <strong>Resolved</strong> (with timestamp).
+          </li>
+          <li>
+            <strong>Settings (<code>/tabs/settings</code>):</strong> Safe Test Mode toggle, countdown duration selector
+            (<code>3s</code>/<code>5s</code>/<code>10s</code>), and log clearing.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>3. Technical Implementation &amp; Architecture</h2>
+    <p>
+      The application is structured using Angular 22 standalone components and reactive Signals (<code>signal</code>,
+      <code>computed</code>) inside Ionic 9 tabs, packaged for Android via Capacitor 8.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Layer / File</th>
+          <th>Responsibility &amp; Key APIs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src/app/models/emergency.model.ts</code></td>
+          <td>
+            Strongly typed interfaces for <code>EmergencyAlert</code>, <code>GeoLocationFix</code>,
+            <code>AppSettings</code>, <code>EmergencyCategory</code>, and <code>AlertStatus</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/app/services/location.service.ts</code></td>
+          <td>
+            Checks and requests native Android location permissions via
+            <code>@capacitor/geolocation</code>, returning latitude, longitude, and meter accuracy.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/app/services/geocoding.service.ts</code></td>
+          <td>
+            Uses Angular <code>HttpClient</code> (<code>GET</code>) against OpenStreetMap Nominatim
+            (<code>format=jsonv2</code>) with a 6s timeout and graceful offline coordinate fallback.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/app/services/emergency-store.service.ts</code></td>
+          <td>
+            Persists alerts and settings locally using <code>@capacitor/preferences</code> and exposes read-only Signals
+            (<code>alerts</code>, <code>settings</code>, <code>activeCount</code>).
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/app/services/emergency-dispatch.service.ts</code></td>
+          <td>
+            Coordinates <code>@capacitor/haptics</code> pulses, alert persistence,
+            <code>@capacitor/local-notifications</code> Admin alerts, and Safe Test Mode / <code>tel:911</code> dialer
+            handoff.
+          </td>
+        </tr>
+        <tr>
+          <td><code>src/app/components/emergency-map/</code></td>
+          <td>
+            Shared Leaflet component rendering OpenStreetMap tiles, a pulsing CSS marker
+            (<code>.emergency-pin-dot</code>), accuracy circle, and Ionic tab resize handling.
+          </td>
+        </tr>
+        <tr>
+          <td><code>android/app/src/main/AndroidManifest.xml</code></td>
+          <td>
+            Declares <code>INTERNET</code>, <code>ACCESS_COARSE_LOCATION</code>, <code>ACCESS_FINE_LOCATION</code>,
+            <code>POST_NOTIFICATIONS</code>, and <code>VIBRATE</code>.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4. Testing, Limitations &amp; Future Improvements</h2>
+    <p>
+      Verification combined TypeScript static checks, ESLint/Prettier formatting rules, Vitest unit testing across
+      services and pages, Playwright Mobile Chrome end-to-end tests, and Capacitor Android synchronization.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Test Case / Check</th>
+          <th>Scope &amp; Method</th>
+          <th>Observed Outcome</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>TypeScript &amp; Production Build</td>
+          <td><code>tsc --noEmit</code> &amp; <code>pnpm run build</code> (<code>ng build</code>)</td>
+          <td>Passed (0 errors; bundle emitted to <code>www/</code>).</td>
+        </tr>
+        <tr>
+          <td>Code Quality &amp; Formatting</td>
+          <td><code>pnpm run lint</code> (ESLint max-warnings 0, E2E tsc, Prettier)</td>
+          <td>Passed (0 warnings/errors).</td>
+        </tr>
+        <tr>
+          <td>Service &amp; Page Unit Tests</td>
+          <td><code>pnpm run test:unit</code> (Vitest across 8 spec files)</td>
+          <td>
+            Passed (14/14 unit tests covering store, Nominatim GET/fallback, Safe Test vs Live 911 dispatch, SOS
+            countdown cancel/dispatch, Admin filters, Settings).
+          </td>
+        </tr>
+        <tr>
+          <td>Mobile Chrome E2E Flow</td>
+          <td><code>e2e/app.spec.ts</code> (Playwright Pixel 7 profile, system Chrome, mocked GPS &amp; Nominatim)</td>
+          <td>
+            Passed (1/1 full workflow: zero-login SOS, countdown cancel, 3s dispatch, Output Card, Admin
+            Acknowledge/Resolve).
+          </td>
+        </tr>
+        <tr>
+          <td>Capacitor Android Sync</td>
+          <td><code>pnpm exec cap sync android</code></td>
+          <td>Passed (synced 4 native plugins: geolocation, haptics, local-notifications, preferences).</td>
+        </tr>
+        <tr>
+          <td>Android Device / APK</td>
+          <td>Android Studio APK build &amp; physical Android device</td>
+          <td>Pending final on-device APK build &amp; live GPS/911-guard verification via Android Studio.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Architectural Limitation &amp; Future Improvement:</strong><br />
+      To keep the case study self-contained with zero backend credentials, alerts are stored locally on-device via
+      <code>@capacitor/preferences</code>. Consequently, the <strong>SOS</strong> sender and
+      <strong>Admin Monitor</strong> operate on the same device rather than across separate caller and responder
+      devices. In a production deployment, <code>EmergencyStoreService</code> and
+      <code>EmergencyDispatchService</code> can be extended to push alerts to a cloud database (e.g., Firebase Firestore
+      or Supabase) with Firebase Cloud Messaging (FCM) push notifications while preserving the zero-account caller
+      workflow.
+    </div>
+
+    <h2>5. End-to-End Dispatch Flow &amp; Android Packaging</h2>
+    <p>At runtime, the application follows a deterministic, fault-tolerant sequence from launch to responder review:</p>
+    <ul>
+      <li>
+        <strong>1. Immediate Launch:</strong> <code>tabs.routes.ts</code> routes directly to <code>/tabs/sos</code> with
+        no authentication screen.
+      </li>
+      <li>
+        <strong>2. GPS &amp; Address Resolution:</strong> <code>LocationService</code> requests Android location
+        permissions and acquires coordinates; <code>GeocodingService</code> fetches street details via Angular
+        <code>HttpClient</code> (<code>GET</code>) or falls back cleanly when offline.
+      </li>
+      <li>
+        <strong>3. Guarded Dispatch:</strong> <code>SosPage</code> runs a cancelable countdown
+        (<code>3s</code>/<code>5s</code>/<code>10s</code>) with <code>Haptics.impact</code> ticks. Upon completion,
+        <code>EmergencyDispatchService</code> saves the alert, triggers a local notification, and honors
+        <strong>Safe Test Mode</strong> before opening <code>tel:911</code>.
+      </li>
+      <li>
+        <strong>4. Android Build Pipeline:</strong> Web assets compiled via <code>pnpm run build</code> are synced into
+        <code>android/</code> with <code>pnpm exec cap sync android</code> and packaged into an installable
+        <code>.apk</code> in Android Studio (<code>Build &gt; Build APK(s)</code>).
+      </li>
+    </ul>
+
+    <h2>6. AI Usage Disclosure</h2>
+    <p>
+      In accordance with academic integrity guidelines, the group discloses that AI coding assistance was utilized
+      during development for:
+    </p>
+    <ul>
+      <li>
+        Scaffolding the Ionic/Angular standalone page structure, Leaflet map wrapper, and Capacitor plugin integration
+        patterns.
+      </li>
+      <li>
+        Generating Vitest unit test suites, Playwright end-to-end test scenarios, and structured case study
+        documentation drafts.
+      </li>
+      <li>Resolving ESLint/TypeScript strictness diagnostics and verifying project build configuration.</li>
+    </ul>
+    <p>
+      All architectural decisions (zero-account SOS access, accidental-press countdown guard, Safe Test Mode default,
+      and OpenStreetMap Nominatim <code>HttpClient</code> integration), code reviews, and verification runs were
+      reviewed and validated by the group members.
+    </p>
+  </body>
+</html>

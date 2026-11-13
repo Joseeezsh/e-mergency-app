@@ -1,0 +1,115 @@
+<ion-header>
+  <ion-toolbar color="dark">
+    <ion-button slot="start" fill="clear" color="light" (click)="backToCitizen()">
+      <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+    </ion-button>
+    <ion-title>Dispatcher Portal</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding admin-login-content">
+  <div class="login-wrapper">
+    <div class="brand-header">
+      <div class="brand-badge">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+      </div>
+      <h1 class="brand-title">E-mergency App</h1>
+      <p class="brand-subtitle">Authorized Dispatcher &amp; Admin Gateway</p>
+    </div>
+
+    <!-- Evaluator Quick Fill Card -->
+    <ion-card class="evaluator-card">
+      <ion-card-header>
+        <div class="eval-header-row">
+          <ion-icon name="flash-outline" color="warning"></ion-icon>
+          <ion-card-title>Preset Evaluator Access</ion-card-title>
+        </div>
+        <ion-card-subtitle>For Professor &amp; Live Phone Evaluation</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="eval-info">
+          Use the preset credentials below or tap the quick-fill button to authenticate instantly on mobile.
+        </p>
+        <div class="cred-preview">
+          <div><strong>User:</strong> <code>{{ presetInfo.email }}</code> (or <code>{{ presetInfo.alias }}</code>)</div>
+          <div><strong>Pass:</strong> <code>{{ presetInfo.password }}</code></div>
+        </div>
+        <ion-button expand="block" color="warning" fill="solid" (click)="quickFillPreset()">
+          <ion-icon slot="start" name="flash-outline"></ion-icon>
+          Quick Fill Preset Credentials
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Login Form Card -->
+    <ion-card class="login-card">
+      <ion-card-header>
+        <ion-card-title>Dispatcher Sign-In</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        @if (errorMessage(); as error) {
+        <div class="error-banner">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+          <span>{{ error }}</span>
+        </div>
+        }
+
+        <ion-item lines="inset" class="input-item">
+          <ion-icon slot="start" name="person-outline" color="medium"></ion-icon>
+          <ion-input
+            type="text"
+            label="Username or Email"
+            labelPlacement="floating"
+            placeholder="admin@emergency.ph"
+            [ngModel]="username()"
+            (ngModelChange)="username.set($event)"
+            [disabled]="loggingIn()"
+            autocomplete="username"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item lines="inset" class="input-item">
+          <ion-icon slot="start" name="lock-closed-outline" color="medium"></ion-icon>
+          <ion-input
+            [type]="showPassword() ? 'text' : 'password'"
+            label="Password"
+            labelPlacement="floating"
+            placeholder="Enter password"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            [disabled]="loggingIn()"
+            autocomplete="current-password"
+            (keyup.enter)="onLogin()"
+          ></ion-input>
+          <ion-button slot="end" fill="clear" color="medium" (click)="togglePasswordVisibility()">
+            <ion-icon slot="icon-only" [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </ion-button>
+        </ion-item>
+
+        <div class="login-action-wrap">
+          <ion-button
+            expand="block"
+            color="primary"
+            size="large"
+            [disabled]="loggingIn()"
+            (click)="onLogin()"
+          >
+            @if (loggingIn()) {
+            <ion-spinner name="crescent"></ion-spinner>
+            <span class="btn-text">Verifying...</span>
+            } @else {
+            <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+            <span class="btn-text">Enter Admin Dashboard</span>
+            }
+          </ion-button>
+
+          <ion-button expand="block" fill="clear" color="medium" (click)="backToCitizen()" [disabled]="loggingIn()">
+            <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+            Return to Public SOS Page
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+

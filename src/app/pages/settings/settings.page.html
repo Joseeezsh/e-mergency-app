@@ -1,0 +1,195 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Settings &amp; Info</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Emergency Guard &amp; Demo Controls</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-label>
+            <h2>Safe Test Mode</h2>
+            <p>Blocks real 911 phone calls during testing and recording.</p>
+          </ion-label>
+          <ion-toggle
+            slot="end"
+            [checked]="store.settings().safeTestMode"
+            (ionChange)="toggleSafeTestMode($event.detail.checked)"
+          ></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>
+            <h2>Countdown Alert Sound</h2>
+            <p>Plays iPhone-style SOS beep pulses during countdown and dispatch.</p>
+          </ion-label>
+          <ion-toggle
+            slot="end"
+            [checked]="store.settings().soundEnabled"
+            (ionChange)="toggleSoundEnabled($event.detail.checked)"
+          ></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>
+            <h2>Auto-Dial 911 on Dispatch</h2>
+            <p>Automatically opens the phone dialer when the SOS countdown ends.</p>
+          </ion-label>
+          <ion-toggle
+            slot="end"
+            [checked]="store.settings().autoDialOnDispatch"
+            (ionChange)="toggleAutoDial($event.detail.checked)"
+          ></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>
+            <h2>Accidental-Press Countdown</h2>
+            <p>Delay before dispatching SOS alert.</p>
+          </ion-label>
+          <ion-select
+            interface="popover"
+            [value]="store.settings().countdownSeconds"
+            (ionChange)="changeCountdown($event.detail.value)"
+          >
+            <ion-select-option [value]="3">3 seconds</ion-select-option>
+            <ion-select-option [value]="5">5 seconds</ion-select-option>
+            <ion-select-option [value]="10">10 seconds</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+
+      <div class="clear-wrap">
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="medium"
+          (click)="clearAlerts()"
+          [disabled]="store.alerts().length === 0"
+        >
+          <ion-icon slot="start" name="trash-outline"></ion-icon>
+          Clear Local Alert Logs ({{ store.alerts().length }})
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Permissions &amp; Location Services</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="full">
+        <ion-item>
+          <ion-label>
+            <h2>Location Services (GPS)</h2>
+            <p>Required on your phone to detect emergency coordinates.</p>
+          </ion-label>
+          <ion-badge slot="end" [color]="permissionSummary().locationServicesEnabled ? 'success' : 'danger'">
+            {{ permissionSummary().locationServicesEnabled ? 'Enabled' : 'Off' }}
+          </ion-badge>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <h2>Location Permission</h2>
+            <p>Allows E-mergency App to read GPS coordinates.</p>
+          </ion-label>
+          <ion-badge slot="end" [color]="permissionSummary().locationPermission === 'granted' ? 'success' : 'warning'">
+            {{ permissionSummary().locationPermission | titlecase }}
+          </ion-badge>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <h2>Notifications Permission</h2>
+            <p>Allows Admin Monitor local alerts on Android 13+.</p>
+          </ion-label>
+          <ion-badge
+            slot="end"
+            [color]="permissionSummary().notificationsPermission === 'granted' ? 'success' : 'warning'"
+          >
+            {{ permissionSummary().notificationsPermission | titlecase }}
+          </ion-badge>
+        </ion-item>
+      </ion-list>
+
+      <div class="clear-wrap">
+        <ion-button expand="block" fill="outline" color="primary" (click)="requestPermissions()">
+          <ion-icon slot="start" name="locate-outline"></ion-icon>
+          Check / Request Permissions
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Dispatcher / Admin Portal -->
+  <ion-card class="admin-portal-card">
+    <ion-card-header>
+      <div class="card-header-flex">
+        <div>
+          <ion-card-subtitle>Restricted Access</ion-card-subtitle>
+          <ion-card-title>Dispatcher &amp; Admin Portal</ion-card-title>
+        </div>
+        <ion-icon name="lock-closed-outline" color="warning" class="portal-lock-icon"></ion-icon>
+      </div>
+    </ion-card-header>
+    <ion-card-content>
+      <p class="portal-desc">
+        Access the real-time Incident Monitor, Leaflet tactical map, caller photo evidence, and alert resolution workflow.
+      </p>
+      <ion-button expand="block" color="dark" (click)="openAdminPortal()">
+        <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+        Open Dispatcher Login
+        <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Emergency Hotlines Directory -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-subtitle>Direct Phone Calling</ion-card-subtitle>
+      <ion-card-title>Emergency Hotlines Directory</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="full">
+        @for (line of hotlines; track line.number) {
+        <ion-item button (click)="callHotline(line.number)" detail="false">
+          <ion-icon slot="start" name="call-outline" color="danger"></ion-icon>
+          <ion-label>
+            <h2>{{ line.name }} ({{ line.display || line.number }})</h2>
+            <p>{{ line.desc }}</p>
+          </ion-label>
+          <ion-button slot="end" fill="outline" size="small" color="danger">
+            Call
+          </ion-button>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>E-mergency App</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p><strong>Course:</strong> Mobile Application Technology — Final Case Study</p>
+      <p><strong>Stack:</strong> Ionic + Angular + Capacitor + Leaflet</p>
+      <p><strong>Data Mode:</strong> Local Storage (&#64;capacitor/preferences) + HttpClient GET</p>
+      <p class="members-title"><strong>Group Members:</strong></p>
+      <ul class="members-list">
+        @for (member of groupMembers; track member) {
+        <li>{{ member }}</li>
+        }
+      </ul>
+      <ion-note>
+        No user account or login is required so anyone in an emergency can access SOS services immediately.
+      </ion-note>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

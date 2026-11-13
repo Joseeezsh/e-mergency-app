@@ -1,0 +1,271 @@
+<ion-header>
+  <ion-toolbar color="danger">
+    <ion-title>E-mergency App</ion-title>
+    <ion-buttons slot="end">
+      <ion-badge [color]="store.settings().safeTestMode ? 'warning' : 'light'" class="mode-badge">
+        {{ store.settings().safeTestMode ? 'SAFE TEST' : 'LIVE 911' }}
+      </ion-badge>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Permissions & Location Services Notice -->
+  @if (needsPermissionAttention()) {
+  <ion-card class="sos-card permission-notice-card">
+    <ion-card-header>
+      <div class="card-header-row">
+        <div>
+          <ion-card-subtitle>Required Device Access</ion-card-subtitle>
+          <ion-card-title>Permissions &amp; Location Services</ion-card-title>
+        </div>
+        <ion-icon name="shield-checkmark-outline" color="warning" class="notice-icon"></ion-icon>
+      </div>
+    </ion-card-header>
+    <ion-card-content>
+      <p class="notice-text">
+        E-mergency App uses <strong>Location Services (Precise GPS)</strong> to share your exact address during an
+        emergency, and <strong>Notifications</strong> to alert the Admin Monitor.
+      </p>
+
+      <div class="perm-status-list">
+        <div class="perm-status-row">
+          <span>Device Location Services (GPS):</span>
+          <ion-badge [color]="permissionSummary().locationServicesEnabled ? 'success' : 'danger'">
+            {{ permissionSummary().locationServicesEnabled ? 'Enabled' : 'Turned Off' }}
+          </ion-badge>
+        </div>
+        <div class="perm-status-row">
+          <span>Location Permission:</span>
+          <ion-badge
+            [color]="
+                permissionSummary().locationPermission === 'granted' ? 'success' : 'warning'
+              "
+          >
+            {{ permissionSummary().locationPermission | titlecase }}
+          </ion-badge>
+        </div>
+        <div class="perm-status-row">
+          <span>Notifications Permission:</span>
+          <ion-badge
+            [color]="
+                permissionSummary().notificationsPermission === 'granted' ? 'success' : 'warning'
+              "
+          >
+            {{ permissionSummary().notificationsPermission | titlecase }}
+          </ion-badge>
+        </div>
+      </div>
+
+      <div class="perm-actions">
+        <ion-button
+          expand="block"
+          color="warning"
+          (click)="requestPermissionsAndLocate()"
+          [disabled]="loadingLocation()"
+        >
+          <ion-icon slot="start" name="locate-outline"></ion-icon>
+          Grant Permissions &amp; Enable Location
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+  }
+
+  <!-- Location Status & Live Map -->
+  <ion-card class="sos-card">
+    <ion-card-header>
+      <div class="card-header-row">
+        <div>
+          <ion-card-subtitle>Live Geolocation</ion-card-subtitle>
+          <ion-card-title>Your Current Position</ion-card-title>
+        </div>
+        <ion-button fill="outline" size="small" (click)="refreshLocation()" [disabled]="loadingLocation()">
+          <ion-icon slot="start" name="locate-outline"></ion-icon>
+          Refresh
+        </ion-button>
+      </div>
+    </ion-card-header>
+
+    <ion-card-content>
+      @if (loadingLocation()) {
+      <div class="loading-box">
+        <ion-spinner name="crescent" color="danger"></ion-spinner>
+        <ion-text color="medium"><p>Acquiring GPS coordinates...</p></ion-text>
+      </div>
+      } @if (locationError(); as err) {
+      <div class="error-banner">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <span>{{ err }}</span>
+      </div>
+      } @if (locationFix(); as fix) {
+      <app-emergency-map
+        [lat]="fix.lat"
+        [lng]="fix.lng"
+        [accuracy]="fix.accuracy"
+        [label]="address()"
+        height="220px"
+      ></app-emergency-map>
+
+      <div class="location-details">
+        <p class="address-line"><strong>Address:</strong> {{ address() }}</p>
+        <p class="coords-line">
+          <strong>GPS:</strong> {{ fix.lat | number: '1.5-5' }}, {{ fix.lng | number: '1.5-5' }} (±{{ fix.accuracy }} m)
+        </p>
+      </div>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Emergency Type & Optional Note -->
+  <ion-card class="sos-card">
+    <ion-card-header>
+      <ion-card-subtitle>Step 1 — Details (No Account Needed)</ion-card-subtitle>
+      <ion-card-title>Emergency Type</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="category-chips">
+        @for (cat of categories; track cat) {
+        <ion-chip
+          [color]="selectedCategory() === cat ? 'danger' : 'medium'"
+          [outline]="selectedCategory() !== cat"
+          (click)="selectedCategory.set(cat)"
+        >
+          <ion-label>{{ cat }}</ion-label>
+        </ion-chip>
+        }
+      </div>
+
+      <ion-item lines="none" class="note-item">
+        <ion-textarea
+          label="Brief Note (Optional)"
+          labelPlacement="stacked"
+          placeholder="e.g., Landmark, floor number, injuries..."
+          rows="2"
+          [ngModel]="note()"
+          (ngModelChange)="note.set($event)"
+        ></ion-textarea>
+      </ion-item>
+
+      <div class="photo-attach-wrap">
+        <p class="photo-label">Scene Photo (Optional)</p>
+        <div class="photo-buttons">
+          <ion-button
+            size="small"
+            fill="outline"
+            (click)="attachPhoto('camera')"
+            [disabled]="capturingPhoto() || dispatching()"
+          >
+            <ion-icon slot="start" name="camera-outline"></ion-icon>
+            Take Photo
+          </ion-button>
+          <ion-button
+            size="small"
+            fill="outline"
+            (click)="attachPhoto('gallery')"
+            [disabled]="capturingPhoto() || dispatching()"
+          >
+            <ion-icon slot="start" name="image-outline"></ion-icon>
+            Choose Photo
+          </ion-button>
+        </div>
+
+        @if (attachedPhoto(); as photo) {
+        <div class="photo-preview-box">
+          <img [src]="photo" alt="Attached emergency scene" class="photo-preview-img" />
+          <ion-button size="small" fill="clear" color="danger" (click)="removeAttachedPhoto()">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            Remove Photo
+          </ion-button>
+        </div>
+        }
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- SOS Trigger or Cancelable Countdown -->
+  @if (countdownRemaining(); as count) {
+  <ion-card color="danger" class="countdown-card">
+    <ion-card-content class="ion-text-center">
+      <p class="countdown-title">Sending Emergency Alert in</p>
+      <div class="countdown-number">{{ count }}</div>
+      <p class="countdown-sub">Tap Cancel immediately if this was pressed by accident.</p>
+      <ion-button expand="block" color="light" size="large" (click)="cancelSosCountdown()">
+        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+        CANCEL SOS
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+  } @else {
+  <div class="sos-action-wrap">
+    <ion-button
+      expand="block"
+      color="danger"
+      size="large"
+      class="sos-trigger-btn"
+      [disabled]="!locationFix() || dispatching()"
+      (click)="startSosCountdown()"
+    >
+      <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
+      {{ dispatching() ? 'DISPATCHING ALERT...' : 'SOS — CALL 911 (' + store.settings().countdownSeconds + 's GUARD)' }}
+    </ion-button>
+
+    <ion-button
+      expand="block"
+      fill="outline"
+      color="danger"
+      class="direct-call-btn"
+      (click)="callDirect('911')"
+    >
+      <ion-icon slot="start" name="call-outline"></ion-icon>
+      Instant Phone Call — 911 (Skip Countdown)
+    </ion-button>
+
+    @if (store.settings().safeTestMode) {
+    <p class="safe-hint">
+      <ion-icon name="shield-checkmark-outline"></ion-icon>
+      Safe Test Mode is ON: real 911 dialing is blocked during demo/testing.
+    </p>
+    }
+  </div>
+  }
+
+  <!-- Emergency Output Card -->
+  @if (lastDispatchedAlert(); as alert) {
+  <ion-card class="output-card">
+    <ion-card-header>
+      <div class="card-header-row">
+        <div>
+          <ion-card-subtitle>Emergency Output Sent</ion-card-subtitle>
+          <ion-card-title>{{ alert.id }} — {{ alert.category }}</ion-card-title>
+        </div>
+        <ion-badge color="success">Notified Admin</ion-badge>
+      </div>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p><strong>Call Action:</strong> {{ alert.dialedNumber }}</p>
+      <p><strong>Address:</strong> {{ alert.address }}</p>
+      <p><strong>Coordinates:</strong> {{ alert.lat | number: '1.5-5' }}, {{ alert.lng | number: '1.5-5' }}</p>
+      <p><strong>Time:</strong> {{ alert.timestamp | date: 'medium' }}</p>
+      @if (alert.photoDataUrl; as sentPhoto) {
+      <div class="sent-photo-wrap">
+        <p><strong>Attached Photo:</strong></p>
+        <img [src]="sentPhoto" alt="Dispatched emergency scene" class="photo-preview-img" />
+      </div>
+      }
+
+      <div class="output-actions">
+        <ion-button size="small" fill="outline" (click)="copySummary(alert)">
+          <ion-icon slot="start" name="copy-outline"></ion-icon>
+          Copy Summary
+        </ion-button>
+        <ion-button size="small" fill="outline" [href]="getMapUrl(alert.lat, alert.lng)" target="_blank" rel="noopener">
+          <ion-icon slot="start" name="open-outline"></ion-icon>
+          Open Map
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+  }
+</ion-content>

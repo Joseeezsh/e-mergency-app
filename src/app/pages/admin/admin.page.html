@@ -1,0 +1,119 @@
+<ion-header>
+  <ion-toolbar color="dark">
+    <ion-title>Admin Monitor</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="outline" color="light" size="small" (click)="logout()">
+        <ion-icon slot="start" name="log-out-outline"></ion-icon>
+        Exit / Logout
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="statusFilter()" (ionChange)="onFilterChange($event.detail.value)">
+      <ion-segment-button value="All">
+        <ion-label>All</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="Active">
+        <ion-label>Active</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="Acknowledged">
+        <ion-label>Ack</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="Resolved">
+        <ion-label>Done</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (selectedAlert(); as active) {
+  <ion-card class="inspector-card">
+    <ion-card-header>
+      <div class="header-row">
+        <div>
+          <ion-card-subtitle>Selected SOS Location</ion-card-subtitle>
+          <ion-card-title>{{ active.id }} — {{ active.category }}</ion-card-title>
+        </div>
+        <ion-badge [color]="badgeColor(active.status)">{{ active.status }}</ion-badge>
+      </div>
+    </ion-card-header>
+    <ion-card-content>
+      <app-emergency-map
+        [lat]="active.lat"
+        [lng]="active.lng"
+        [accuracy]="active.accuracy"
+        [label]="active.id + ': ' + active.address"
+        height="210px"
+      ></app-emergency-map>
+
+      <div class="alert-meta">
+        <p><strong>Address:</strong> {{ active.address }}</p>
+        <p>
+          <strong>Coordinates:</strong> {{ active.lat | number: '1.5-5' }}, {{ active.lng | number: '1.5-5' }} (±{{
+          active.accuracy }} m)
+        </p>
+        <p><strong>Call Mode:</strong> {{ active.dialedNumber }}</p>
+        @if (active.note) {
+        <p><strong>Caller Note:</strong> {{ active.note }}</p>
+        }
+        <p><strong>Reported:</strong> {{ active.timestamp | date: 'medium' }}</p>
+      </div>
+
+      @if (active.photoDataUrl; as photo) {
+      <div class="inspector-photo-wrap">
+        <p class="inspector-photo-title"><strong>Caller Attached Photo:</strong></p>
+        <img [src]="photo" alt="Emergency scene submitted by caller" class="inspector-photo-img" />
+      </div>
+      }
+
+      <div class="action-row">
+        @if (active.status === 'Active') {
+        <ion-button size="small" color="warning" (click)="setStatus(active, 'Acknowledged')">
+          <ion-icon slot="start" name="time-outline"></ion-icon>
+          Acknowledge
+        </ion-button>
+        } @if (active.status !== 'Resolved') {
+        <ion-button size="small" color="success" (click)="setStatus(active, 'Resolved')">
+          <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+          Mark Resolved
+        </ion-button>
+        }
+      </div>
+    </ion-card-content>
+  </ion-card>
+  } @if (filteredAlerts().length === 0) {
+  <ion-card class="empty-card">
+    <ion-card-content class="ion-text-center">
+      <ion-icon name="notifications-outline" class="empty-icon"></ion-icon>
+      <ion-text color="medium">
+        <p>No emergency alerts in this view yet. Trigger an SOS from the SOS tab to test.</p>
+      </ion-text>
+    </ion-card-content>
+  </ion-card>
+  } @else { @for (alert of filteredAlerts(); track alert.id) {
+  <ion-card
+    button
+    class="alert-item-card"
+    [class.selected]="selectedAlert()?.id === alert.id"
+    (click)="selectAlert(alert)"
+  >
+    <ion-card-content>
+      <div class="header-row">
+        <strong>{{ alert.id }} — {{ alert.category }}</strong>
+        <ion-badge [color]="badgeColor(alert.status)">{{ alert.status }}</ion-badge>
+      </div>
+      <p class="item-address">{{ alert.address }}</p>
+      <div class="item-footer-row">
+        <p class="item-time">{{ alert.timestamp | date: 'short' }}</p>
+        @if (alert.photoDataUrl) {
+        <span class="photo-tag">
+          <ion-icon name="image-outline"></ion-icon>
+          Photo
+        </span>
+        }
+      </div>
+    </ion-card-content>
+  </ion-card>
+  } }
+</ion-content>
