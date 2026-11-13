@@ -23,6 +23,11 @@ log.txt
 /platforms
 /plugins
 
+# Environments & secrets
+.env
+.env.local
+.env.*.local
+
 # Compiled output
 /dist
 /tmp
