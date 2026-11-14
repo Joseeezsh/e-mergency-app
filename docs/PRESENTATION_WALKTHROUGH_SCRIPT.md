@@ -157,27 +157,3 @@ TIMELINE OVERVIEW (Total: ~10:30)
 > 
 > On behalf of Jose, Maricar, Ana Leah, and myself, thank you very much for your time and attention!"
 
----
-
-## Quick Reference Cards for Each Member
-
-### 👤 Jose's Cue Card
-* **Focus:** Hook, Problem (panic, account walls, lack of photos), Solution (zero-barrier, GPS, photo, 911 call, cloud dispatch).
-* **Keywords:** Zero-barrier philosophy, no login required, high-precision GPS, Capacitor, Supabase.
-* **Handoff:** *"Now, I will turn the floor over to Maricar, who will demonstrate the citizen interface..."*
-
-### 👤 Maricar's Cue Card
-* **Focus:** Citizen App Demo (2 tabs, permission check, Leaflet GPS, categories, photo capture, direct 911 call button, 5-sec countdown with audio beeps and cancel guard, Settings directory).
-* **Keywords:** Direct 911 dialer, Web Audio countdown, photo attachment, accidental press protection.
-* **Handoff:** *"Next, Ana Leah will show you what happens on the Dispatcher's end..."*
-
-### 👤 Ana Leah's Cue Card
-* **Focus:** Admin Portal (route guard, evaluator 1-tap quick fill, Supabase Realtime live sync across devices, Leaflet map pin, photo inspector, code highlights: `EmergencyStoreService`, `LocationService`, `SoundFeedbackService`).
-* **Keywords:** Protected route, Supabase Realtime, postgres_changes, Web Audio API synthesis.
-* **Handoff:** *"Now, Beatriz will conclude with our testing, limitations, and AI disclosure."*
-
-### 👤 Beatriz's Cue Card
-* **Focus:** Safe Test Mode vs Live Mode, cross-platform Android testing, limitations (basement GPS, cellular data), future improvements (SMS fallback, 2-way chat), transparent AI disclosure (Antigravity/Gemini), closing.
-* **Keywords:** Academic disclosure, Safe Test Mode, Android Studio, hybrid architecture.
-* **Handoff:** *"Thank you very much for your time and attention!"*
-
